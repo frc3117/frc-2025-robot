@@ -10,6 +10,16 @@ class Robot(RobotBase):
         super().robotInit()
 
         Input.add_button('next_button', 0, XboxControllerInput.X)
+        Input.create_composite_axis(
+            name='drive',
+            positive=Input.add_button('forward_drive', 0, XboxControllerInput.Y),
+            negative=Input.add_button('backward_drive', 0, XboxControllerInput.X)
+        )
+        Input.create_composite_axis(
+            name='direction',
+            positive=Input.add_button('forward_dir', 0, XboxControllerInput.B),
+            negative=Input.add_button('backward_dir', 0, XboxControllerInput.A)
+        )
 
         self.calibrator = SwerveCalibrator(
             [
