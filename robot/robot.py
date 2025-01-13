@@ -1,6 +1,6 @@
 import math
 
-from frctools import RobotBase, WPI_CANSparkMax
+from frctools import RobotBase, WPI_CANSparkMax, WPI_CANSparkFlex
 from frctools.drivetrain import SwerveModule, SwerveDrive
 from frctools.controll import PID
 from frctools.frcmath import Vector2, SlewRateLimiter
@@ -42,28 +42,28 @@ class Robot(RobotBase):
                        
 
         swerveModule = [
-            SwerveModule(drive_motor=WPI_CANSparkMax(2, True, brake=True),
+            SwerveModule(drive_motor=WPI_CANSparkFlex(2, True, brake=True),
                          steering_motor=WPI_CANSparkMax(1, True, brake=True),
                          steering_encoder=AnalogEncoder(0),
                          steering_controller=PID(1, 0, 0),
                          steering_offset=0,
                          position=Vector2(-10.875, 13.375)),
 
-            SwerveModule(drive_motor=WPI_CANSparkMax(8, True, brake=True),
+            SwerveModule(drive_motor=WPI_CANSparkFlex(8, True, brake=True),
                          steering_motor=WPI_CANSparkMax(7, True, brake=True),
                          steering_encoder=AnalogEncoder(1),
                          steering_controller=PID(1, 0, 0),
                          steering_offset=0,
                          position=Vector2(10.875, 13.375)),
 
-            SwerveModule(drive_motor=WPI_CANSparkMax(6, True, brake=True),
+            SwerveModule(drive_motor=WPI_CANSparkFlex(6, True, brake=True),
                          steering_motor=WPI_CANSparkMax(5, True, brake=True),
                          steering_encoder=AnalogEncoder(2),
                          steering_controller=PID(1, 0, 0),
                          steering_offset=0,
                          position=Vector2(10.875, -13.375)),
 
-            SwerveModule(drive_motor=WPI_CANSparkMax(4, True, brake=True),
+            SwerveModule(drive_motor=WPI_CANSparkFlex(4, True, brake=True),
                          steering_motor=WPI_CANSparkMax(3, True, brake=True),
                          steering_encoder=AnalogEncoder(3),
                          steering_controller=PID(1, 0, 0),
