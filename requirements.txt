@@ -1,0 +1,2 @@
+-e ./robot/frc-3117-tools-python
+robotpy==2025.1.1

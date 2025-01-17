@@ -1,12 +1,13 @@
 import math
 
 from frctools import RobotBase, WPI_CANSparkMax, WPI_CANSparkFlex
+from frctools.sensor import Encoder
 from frctools.drivetrain import SwerveModule, SwerveDrive
 from frctools.controll import PID
 from frctools.frcmath import Vector2, SlewRateLimiter
 from frctools.input import Input, XboxControllerInput, PowerTransform
 
-from wpilib import AnalogEncoder, ADIS16448_IMU, SPI
+from wpilib import DutyCycleEncoder, ADIS16448_IMU, SPI
 
 
 class Robot(RobotBase):
@@ -44,28 +45,28 @@ class Robot(RobotBase):
         swerveModule = [
             SwerveModule(drive_motor=WPI_CANSparkFlex(2, True, brake=True),
                          steering_motor=WPI_CANSparkMax(1, True, brake=True),
-                         steering_encoder=AnalogEncoder(0),
+                         steering_encoder=Encoder(DutyCycleEncoder(0), 0, False),
                          steering_controller=PID(1, 0, 0),
-                         steering_offset=0,
+                         steering_offset=0.0512,
                          position=Vector2(-10.875, 13.375)),
 
             SwerveModule(drive_motor=WPI_CANSparkFlex(8, True, brake=True),
-                         steering_motor=WPI_CANSparkMax(7, True, brake=True),
-                         steering_encoder=AnalogEncoder(1),
+                         steering_motor=WPI_CANSparkMax(7, True, brake=True, inverted=True),
+                         steering_encoder=Encoder(DutyCycleEncoder(1), 0, False),
                          steering_controller=PID(1, 0, 0),
-                         steering_offset=0,
+                         steering_offset=0.0512,
                          position=Vector2(10.875, 13.375)),
 
             SwerveModule(drive_motor=WPI_CANSparkFlex(6, True, brake=True),
-                         steering_motor=WPI_CANSparkMax(5, True, brake=True),
-                         steering_encoder=AnalogEncoder(2),
+                         steering_motor=WPI_CANSparkMax(5, True, brake=True, inverted=True),
+                         steering_encoder=Encoder(DutyCycleEncoder(2), 0, False),
                          steering_controller=PID(1, 0, 0),
                          steering_offset=0,
                          position=Vector2(10.875, -13.375)),
 
             SwerveModule(drive_motor=WPI_CANSparkFlex(4, True, brake=True),
-                         steering_motor=WPI_CANSparkMax(3, True, brake=True),
-                         steering_encoder=AnalogEncoder(3),
+                         steering_motor=WPI_CANSparkMax(3, True, brake=True, inverted=True),
+                         steering_encoder=Encoder(DutyCycleEncoder(3), 0, False),
                          steering_controller=PID(1, 0, 0),
                          steering_offset=0,
                          position=Vector2(-10.875, -13.375))

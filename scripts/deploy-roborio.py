@@ -44,8 +44,10 @@ def main(robot_code_path: str, team_number: int, net_console: bool = False):
 
         sshcmd = (
             f"{bash_cmd} '"
-            f"/home/admin/rpip install --force-reinstall --no-deps -r {py_deploy_temp_dir}/requirements-roborio.txt; "
             f"{replace_cmd};"
+            "sh /home/lvuser/py/frc-3117-tools-python/build-roborio.sh;"
+            f"/home/admin/rpip install --force-reinstall --no-deps -r {py_deploy_dir}/requirements-roborio.txt; "
+            "/home/admin/rpip install --force-reinstall --no-cache-dir /home/lvuser/py/whl/*;"
             f"/usr/local/bin/python3 -O -m compileall -q -r 5 /home/lvuser/py;"
             ". /etc/profile.d/frc-path.sh; "
             ". /etc/profile.d/natinst-path.sh; "
