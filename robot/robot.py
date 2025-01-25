@@ -7,6 +7,8 @@ from frctools.controll import PID
 from frctools.frcmath import Vector2, SlewRateLimiter
 from frctools.input import Input, XboxControllerInput, PowerTransform
 
+from robot2025 import Climber, Conveyor, CoralOuttake, Elevator
+
 from wpilib import DutyCycleEncoder, ADIS16448_IMU, SPI
 
 
@@ -14,7 +16,7 @@ class Robot(RobotBase):
     def robotInit(self):
         super().robotInit()
 
-        self.__h = Input.add_axis('horizontal',
+        Input.add_axis('horizontal',
                        0,
                        XboxControllerInput.LEFT_JOYSTICK_Y,
                        deadzone=0.02,
@@ -72,5 +74,16 @@ class Robot(RobotBase):
         ]
 
         swerve = SwerveDrive(swerveModule, imu=ADIS16448_IMU(ADIS16448_IMU.IMUAxis.kZ, SPI.Port.kMXP, ADIS16448_IMU.CalibrationTime._1s), start_heading=math.pi)
-
         self.add_component('Swerve', swerve)
+
+        climber = Climber()
+        self.add_component('Climber', climber)
+
+        conveyor = Conveyor()
+        self.add_component('Conveyor', conveyor)
+
+        coral_outtake = CoralOuttake()
+        self.add_component('CoralOuttake', coral_outtake)
+
+        elevator = Elevator()
+        self.add_component('Elevator', elevator)
