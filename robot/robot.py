@@ -6,6 +6,7 @@ from frctools.drivetrain import SwerveModule, SwerveDrive
 from frctools.controll import PID
 from frctools.frcmath import Vector2, SlewRateLimiter
 from frctools.input import Input, XboxControllerInput, PowerTransform
+from frctools.vision.apriltags import AprilTagsReefscapeField
 
 from robot2025 import Climber, Conveyor, CoralOuttake, Elevator
 
@@ -87,3 +88,9 @@ class Robot(RobotBase):
 
         elevator = Elevator()
         self.add_component('Elevator', elevator)
+
+    def disabledExit(self):
+        super().disabledExit()
+
+        # Refresh the alliance for the april tags
+        AprilTagsReefscapeField.refresh_alliance()
