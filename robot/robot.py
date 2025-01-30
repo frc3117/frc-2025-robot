@@ -9,6 +9,7 @@ from frctools.input import Input, XboxControllerInput, PowerTransform
 from frctools.vision.apriltags import AprilTagsReefscapeField
 
 from robot2025 import Climber, Conveyor, CoralOuttake, Elevator
+from robot2025.driver_station import ReefSelector
 
 from wpilib import DutyCycleEncoder, ADIS16448_IMU, SPI
 
