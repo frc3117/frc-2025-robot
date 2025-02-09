@@ -27,6 +27,9 @@ class USBCamera:
             self.__should_run = False
             self.__thread.join()
 
+    def is_running(self) -> bool:
+        return self.__thread is not None and self.__thread.is_alive()
+
     def wait_for_init(self):
         while self.__current_frame is None:
             time.sleep(0.05)
@@ -45,9 +48,11 @@ class USBCamera:
 
             while self.__should_run:
                 ret, frame = cap.read()
-                if ret:
-                    self.__current_frame = frame
-                    self.__current_frame_index += 1
+                if not ret:
+                    break
+
+                self.__current_frame = frame
+                self.__current_frame_index += 1
 
             if cap.isOpened():
                 cap.release()

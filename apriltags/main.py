@@ -55,6 +55,11 @@ def main():
     detection_0 = []
     detection_1 = []
     while True:
+        if not cam0.is_running() or not cam1.is_running():
+            cam0.stop()
+            cam1.stop()
+            break
+
         new_frame = False
 
         frame0, frame0_index = cam0.get_frame()
