@@ -1,7 +1,9 @@
-import time
-
 from frctools.vision import MjpegStreamer
+from frctools.vision.apriltags import AprilTagsNetworkTable
 from frc_apriltags import USBCamera, AprilTagDetector
+
+import time
+import ntcore
 
 
 CAM0_RESOLUTION = (1600, 1304)
@@ -9,10 +11,6 @@ CAM0_FPS = 60
 
 CAM1_RESOLUTION = (1600, 1304)
 CAM1_FPS = 60
-
-
-def do_camera(frame, raw_stream):
-    raw_stream.set_frame(frame)
 
 
 def main():
@@ -43,6 +41,13 @@ def main():
     detector0 = AprilTagDetector(stream0_raw, stream0_detection, CAM0_RESOLUTION, 'calibration_0.json')
     detector1 = AprilTagDetector(stream1_raw, stream1_detection, CAM1_RESOLUTION, 'calibration_1.json')
 
+    # Create the network table client
+    nt = ntcore.NetworkTableInstance.getDefault()
+    nt.startClient4('april-tags-detector')
+    nt.setServer('10.31.17.2', ntcore.NetworkTableInstance.kDefaultPort4)
+
+    april_tags_nt = AprilTagsNetworkTable(16, nt)
+
     #
     cam0_last_index = -1
     cam1_last_index = -1
@@ -65,9 +70,13 @@ def main():
             detection_1 = detector1.detect(frame1, True)
 
         if new_frame:
-            all_detection = detection_0 + detection_1
-            for d in all_detection:
-                print(d)
+            all_detection = []
+            for d0 in detection_0:
+                all_detection.append((0, d0))
+            for d1 in detection_1:
+                all_detection.append((1, d1))
+
+            april_tags_nt(all_detection)
         else:
             time.sleep(0.001)
 

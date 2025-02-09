@@ -86,7 +86,7 @@ class AprilTagDetector:
         self.__new_camera_matrix, roi = cv.getOptimalNewCameraMatrix(self.__camera_matrix, self.__dist, resolution, 0, resolution)
         self.__mapx, self.__mapy = cv.initUndistortRectifyMap(self.__camera_matrix, self.__dist, None, self.__new_camera_matrix, resolution, 5)
 
-        self.__detector = april_tags.Detector(families=tag_family, nthreads=2)
+        self.__detector = april_tags.Detector(families=tag_family, nthreads=6)
         self.__tag_size = tag_size
 
     def detect(self, frame, undistort=False):
