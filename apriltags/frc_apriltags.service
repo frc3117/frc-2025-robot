@@ -1,0 +1,11 @@
+[Unit]
+Description=FRC 3117 Apriltags Detection
+After=network.target
+
+[Service]
+User=frc3117
+ExecStart=/bin/bash /home/frc3117/frc/frc-2025-robot/apriltags/run.sh
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

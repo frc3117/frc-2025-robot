@@ -1,3 +1,7 @@
 [submodule "robot/frc-3117-tools-python"]
 	path = robot/frc-3117-tools-python
 	url = https://github.com/frc3117/frc-3117-tools-python.git
+[submodule "apriltags/mjpeg-streamer"]
+	path = apriltags/mjpeg-streamer
+	url = https://github.com/egeakman/mjpeg-streamer.git
+	branch = on-demand
