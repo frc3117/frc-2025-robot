@@ -1,2 +1,2 @@
 opencv-python
--e mjpeg-streamer
+pupil-apriltags
