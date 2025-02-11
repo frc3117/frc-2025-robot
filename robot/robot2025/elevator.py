@@ -1,6 +1,7 @@
 from frctools import Component, Timer, CoroutineOrder
 from frctools.sensor import Encoder
 from frctools.controll import PID
+from frctools.frcmath import approximately
 
 import wpiutil
 
@@ -22,6 +23,10 @@ class Elevator(Component):
 
     def __control_loop__(self):
         while True:
+            error = self.get_current_height() - self.__target_height
+            out = self.__controller.evaluate(error)
+            self.__motor.set(out)
+
             yield None
 
     def set_target_height(self, height: float):
@@ -33,8 +38,13 @@ class Elevator(Component):
     def hold_height(self):
         self.set_target_height(self.get_current_height())
 
-    def wait_for_height(self):
-        pass
+    def is_at_target(self, tolerance: float = 0.01) -> bool:
+        return approximately(self.__target_height, self.get_current_height(), tolerance)
+
+    def wait_for_height(self, tolerance: float = 0.01):
+        yield from ()
+        while not self.is_at_target(tolerance):
+            yield None
 
     def initSendable(self, builder: wpiutil.SendableBuilder):
         builder.addDoubleProperty('height', self.get_current_height, lambda v: None)

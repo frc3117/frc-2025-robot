@@ -8,7 +8,7 @@ from frctools.frcmath import Vector2, SlewRateLimiter
 from frctools.input import Input, XboxControllerInput, PowerTransform
 from frctools.vision.apriltags import AprilTagsReefscapeField
 
-from robot2025 import Climber, Conveyor, CoralOuttake, Elevator
+from robot2025 import Climber, Conveyor, CoralOuttake, Elevator, RobotController
 
 from wpilib import DutyCycleEncoder, ADIS16448_IMU, SPI
 
@@ -87,8 +87,11 @@ class Robot(RobotBase):
         coral_outtake = CoralOuttake()
         self.add_component('CoralOuttake', coral_outtake)
 
-        #elevator = Elevator()
-        #self.add_component('Elevator', elevator)
+        elevator = Elevator(None, Encoder(DutyCycleEncoder(4), 0, False), PID(1, 0, 0))
+        self.add_component('Elevator', elevator)
+
+        controller = RobotController()
+        self.add_component('RobotController', controller)
 
     def disabledExit(self):
         super().disabledExit()
