@@ -1,4 +1,4 @@
-from frctools import Component, RobotBase
+from frctools import Component, Timer, CoroutineOrder
 from frctools.input import Input
 
 from .climber import Climber
@@ -17,6 +17,8 @@ class RobotController(Component):
     __intake_input: Input = None
     __outtake_input: Input = None
 
+    __logic_coroutine = None
+
     def init(self):
         super().__init__()
 
@@ -30,4 +32,8 @@ class RobotController(Component):
         self.__outtake_input = Input.get_input('outtake')
 
     def update_teleop(self):
-        pass
+        self.__logic_coroutine = Timer.start_coroutine_if_stopped(self.__logic_loop__, self.__logic_coroutine, CoroutineOrder.LATE)
+
+    def __logic_loop__(self):
+        while True:
+            yield None
