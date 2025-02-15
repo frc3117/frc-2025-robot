@@ -5,3 +5,6 @@
 	path = apriltags/mjpeg-streamer
 	url = https://github.com/egeakman/mjpeg-streamer.git
 	branch = on-demand
+[submodule "can-arduino/src/FRC-CAN-Arduino"]
+	path = can-arduino/src/FRC-CAN-Arduino
+	url = https://github.com/ThadHouse/FRC-CAN-Arduino.git
