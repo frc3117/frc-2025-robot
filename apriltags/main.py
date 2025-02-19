@@ -20,7 +20,7 @@ def parse_tuple(val: str):
 
 
 def environment_or_default(name: str, default, parser):
-    value = os.environ.get(name, default)
+    value = os.environ.get(name)
     if value is None:
         return default
 
