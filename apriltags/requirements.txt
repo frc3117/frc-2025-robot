@@ -1,3 +1,4 @@
+robotpy
 opencv-python
 pupil-apriltags
 python-dotenv
