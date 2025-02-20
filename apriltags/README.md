@@ -1,6 +1,6 @@
 # Setup
 ```
-wget https://gist.githubusercontent.com/mickjosh/6bf91403f2259a513eeadc32b782bd22/raw/52e76ccfa98b89aee0aa0d86b2cd872de7929668/apriltags-setup.sh
+wget https://cdn.mickjosh.com/frc/2025/apriltags-setup.sh
 chmod +x apriltags-setup.sh
 ./apriltags-setup.sh
 ```
