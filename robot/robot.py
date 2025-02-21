@@ -78,20 +78,20 @@ class Robot(RobotBase):
         swerve.set_cosine_compensation(True)
         self.add_component('Swerve', swerve)
 
-        climber = Climber()
-        self.add_component('Climber', climber)
+        # climber = Climber()
+        # self.add_component('Climber', climber)
 
-        conveyor = Conveyor()
-        self.add_component('Conveyor', conveyor)
-
-        coral_outtake = CoralOuttake()
-        self.add_component('CoralOuttake', coral_outtake)
-
-        elevator = Elevator(None, Encoder(DutyCycleEncoder(4), 0, False), PID(1, 0, 0))
-        self.add_component('Elevator', elevator)
-
-        controller = RobotController()
-        self.add_component('RobotController', controller)
+        # conveyor = Conveyor()
+        # self.add_component('Conveyor', conveyor)
+        #
+        # coral_outtake = CoralOuttake()
+        # self.add_component('CoralOuttake', coral_outtake)
+        #
+        # elevator = Elevator(None, Encoder(DutyCycleEncoder(4), 0, False), PID(1, 0, 0))
+        # self.add_component('Elevator', elevator)
+        #
+        # controller = RobotController()
+        # self.add_component('RobotController', controller)
 
     def disabledExit(self):
         super().disabledExit()
