@@ -7,6 +7,14 @@ import wpiutil
 
 
 class Elevator(Component):
+    __motor = None
+    __encoder: Encoder = None
+    __controller: PID = None
+
+    __target_height: float = 0.
+
+    __control_coroutine = None
+
     def __init__(self, elevator_motor, elevator_encoder: Encoder, controller: PID):
         super().__init__()
 
@@ -19,7 +27,7 @@ class Elevator(Component):
         self.__control_coroutine = None
 
     def update(self):
-        self.__control_coroutine = Timer.start_coroutine_if_stopped(self.__control_loop__, self.__control_coroutine)
+        self.__control_coroutine = Timer.start_coroutine_if_stopped(self.__control_loop__, self.__control_coroutine, CoroutineOrder.LATE)
 
     def __control_loop__(self):
         while True:
