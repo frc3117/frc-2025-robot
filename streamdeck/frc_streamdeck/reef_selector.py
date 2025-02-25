@@ -18,7 +18,7 @@ class ReefSelector:
             x = floor(i / 4)
             y = i % 4
 
-            key = StreamDeckKeyBool(label=f'{'Left' if x == 0 else 'Right'}: {y+1}', true_img='green', false_img='gray')
+            key = StreamDeckKeyBool(label=f'{"Left" if x == 0 else "Right"}: {y+1}', true_img='green', false_img='gray')
             streamdeck.set_key((x, y), key)
             key.pressed_callback = self.__on_pressed__(i)
 

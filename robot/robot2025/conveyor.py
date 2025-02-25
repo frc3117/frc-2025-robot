@@ -16,17 +16,20 @@ class Conveyor(Component):
         self.__prox = prox
 
     def has_coral(self):
-        return self.__prox.get()
+        return not self.__prox.get()
 
     def wait_for_coral(self):
         yield from ()
         while not self.has_coral():
             yield None
 
+    def feed_coral(self, speed: float = 0.7):
+        self.__motor.set(speed)
+
     def send_coral(self):
         yield from ()
         while self.has_coral():
-            self.__motor.set(0.2)
+            self.__motor.set(0.7)
             yield None
 
         self.__motor.set(0)

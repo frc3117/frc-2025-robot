@@ -10,7 +10,7 @@ from frctools.vision.apriltags import AprilTagsReefscapeField
 
 from robot2025 import Climber, Conveyor, CoralOuttake, Elevator, RobotController
 
-from wpilib import DutyCycleEncoder, ADIS16448_IMU, SPI
+from wpilib import DutyCycleEncoder, ADIS16448_IMU, SPI, DigitalInput
 
 
 class Robot(RobotBase):
@@ -44,7 +44,14 @@ class Robot(RobotBase):
                                                axis_transform=PowerTransform(1.5)),
                        axis_filter=SlewRateLimiter(100))
 
-        swerveModule = [
+        Input.add_button('align', 0, XboxControllerInput.X)
+        Input.add_button('intake', 0, XboxControllerInput.A)
+        Input.add_button('outtake', 0, XboxControllerInput.B)
+
+        Input.add_button('manual_elevator_up', 0, XboxControllerInput.RB)
+        Input.add_button('manual_elevator_down', 0, XboxControllerInput.LB)
+
+        swerve_modules = [
             SwerveModule(drive_motor=WPI_CANSparkFlex(2, True, brake=True, inverted=True),
                          steering_motor=WPI_CANSparkMax(1, True, brake=True),
                          steering_encoder=Encoder(DutyCycleEncoder(0), 0, False),
@@ -74,24 +81,24 @@ class Robot(RobotBase):
                          position=Vector2(10.875, 13.375))
         ]
 
-        swerve = SwerveDrive(swerveModule, imu=ADIS16448_IMU(ADIS16448_IMU.IMUAxis.kZ, SPI.Port.kMXP, ADIS16448_IMU.CalibrationTime._1s), start_heading=math.pi)
+        swerve = SwerveDrive(swerve_modules, imu=ADIS16448_IMU(ADIS16448_IMU.IMUAxis.kZ, SPI.Port.kMXP, ADIS16448_IMU.CalibrationTime._1s), start_heading=math.pi)
         swerve.set_cosine_compensation(True)
         self.add_component('Swerve', swerve)
 
         # climber = Climber()
         # self.add_component('Climber', climber)
 
-        # conveyor = Conveyor()
-        # self.add_component('Conveyor', conveyor)
-        #
-        # coral_outtake = CoralOuttake()
-        # self.add_component('CoralOuttake', coral_outtake)
-        #
-        # elevator = Elevator(None, Encoder(DutyCycleEncoder(4), 0, False), PID(1, 0, 0))
-        # self.add_component('Elevator', elevator)
-        #
-        # controller = RobotController()
-        # self.add_component('RobotController', controller)
+        conveyor = Conveyor(WPI_CANSparkMax(11, True, True), DigitalInput(4))
+        self.add_component('Conveyor', conveyor)
+
+        coral_outtake = CoralOuttake(WPI_CANSparkMax(10, True, True), DigitalInput(5))
+        self.add_component('CoralOuttake', coral_outtake)
+
+        elevator = Elevator(WPI_CANSparkFlex(12, True, True), Encoder(DutyCycleEncoder(6), 0.02, False), PID(9, 0, 0, 0.015, integral_range=(-0.5, 0.5)), DigitalInput(8), DigitalInput(7))
+        self.add_component('Elevator', elevator)
+
+        controller = RobotController()
+        self.add_component('RobotController', controller)
 
     def disabledExit(self):
         super().disabledExit()
