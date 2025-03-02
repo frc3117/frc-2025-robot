@@ -1,3 +1,5 @@
+import math
+
 from ntcore import NetworkTableInstance
 
 
@@ -24,6 +26,13 @@ class ReefSelector:
     @staticmethod
     def set_value(value: int):
         ReefSelector.instance().__set_value__(value)
+
+    @staticmethod
+    def get_height():
+        return ReefSelector.get_value() % 4
+    @staticmethod
+    def get_side():
+        return math.floor(ReefSelector.get_value() / 4)
 
     @staticmethod
     def instance():

@@ -9,12 +9,12 @@ from wpilib import DigitalInput, SmartDashboard
 
 import wpiutil
 
-FEEDING_HEIGHT = 0.053
+FEEDING_HEIGHT = 0.0514
 STAGES_HEIGHT = [
-    0.,
-    0.208,
-    0.492,
-    0.947,
+    0.23,
+    0.23,
+    0.518,
+    0.958,
 ]
 
 

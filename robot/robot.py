@@ -2,7 +2,7 @@ import math
 
 from frctools import RobotBase, WPI_CANSparkMax, WPI_CANSparkFlex
 from frctools.sensor import Encoder
-from frctools.drivetrain import SwerveModule, SwerveDrive
+from frctools.drivetrain import SwerveModule, SwerveDrive, SwerveDriveMode
 from frctools.controll import PID
 from frctools.frcmath import Vector2, SlewRateLimiter
 from frctools.input import Input, XboxControllerInput, PowerTransform
@@ -82,6 +82,7 @@ class Robot(RobotBase):
         ]
 
         swerve = SwerveDrive(swerve_modules, imu=ADIS16448_IMU(ADIS16448_IMU.IMUAxis.kZ, SPI.Port.kMXP, ADIS16448_IMU.CalibrationTime._1s), start_heading=math.pi)
+        swerve.set_drive_mode(SwerveDriveMode.ROBOT_CENTRIC)
         swerve.set_cosine_compensation(True)
         self.add_component('Swerve', swerve)
 
@@ -94,7 +95,7 @@ class Robot(RobotBase):
         coral_outtake = CoralOuttake(WPI_CANSparkMax(10, True, True), DigitalInput(5))
         self.add_component('CoralOuttake', coral_outtake)
 
-        elevator = Elevator(WPI_CANSparkFlex(12, True, True), Encoder(DutyCycleEncoder(6), 0.02, False), PID(9, 0, 0, 0.015, integral_range=(-0.5, 0.5)), DigitalInput(8), DigitalInput(7))
+        elevator = Elevator(WPI_CANSparkFlex(12, True, True), Encoder(DutyCycleEncoder(6), 0.42, False), PID(9, 0, 0, 0.015, integral_range=(-0.5, 0.5)), DigitalInput(8), DigitalInput(7))
         self.add_component('Elevator', elevator)
 
         controller = RobotController()
