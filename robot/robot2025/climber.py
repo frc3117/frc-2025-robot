@@ -1,6 +1,7 @@
 from frctools import Component, Timer
+from frctools.motors import WPI_CANSparkMax
 from frctools.sensor import Encoder
-from frctools.frcmath import approximately
+from frctools.frcmath import approximately, clamp
 from math import copysign
 
 import wpiutil
@@ -8,82 +9,63 @@ import wpiutil
 
 class Climber(Component):
     __angle_motor = None
-    __claw_motor = None
     __angle_encoder: Encoder
-    __claw_encoder:Encoder
 
-    __target_angle: float
-    __target_claw_angle: float
+    __speed: float = 0.
 
     __control_coroutine = None
 
-
-    def __init__(self, angle_motor, claw_motor, angle_encoder: Encoder, claw_encoder: Encoder):
+    def __init__(self, angle_motor: WPI_CANSparkMax, angle_encoder: Encoder):
         super().__init__()
 
         self.__angle_motor = angle_motor
-        self.__claw_motor = claw_motor
         self.__angle_encoder = angle_encoder
-        self.__claw_encoder = claw_encoder
 
-        self.__target_angle = self.__angle_encoder.get()
-        self.__target_claw_angle = self.__angle_encoder.get()
+    def init(self):
+        super().init()
+
+        self.__speed = 0.
 
     def update(self):
         self.__control_coroutine = Timer.start_coroutine_if_stopped(self.__control_loop__, self.__control_coroutine)
 
     def __control_loop__(self):
         while True:
-            if not(self.is_at_angle()):
-                error_angle = self.__target_angle - self.get_current_angle()
-                self.__angle_motor.set(copysign(0.2, error_angle))
-            else:
-                self.__angle_motor.set(0)
+            min_s = -1.
+            max_s = 1.
 
-            if not(self.is_at_claw_angle()):
-                error_claw_angle = self.__target_claw_angle - self.get_current_claw_angle()
-                self.__claw_motor.set(copysign(0.2, error_claw_angle))
-            else:
-                self.__claw_motor.set(0)
+            if self.get_current_angle() >= 0.30:
+                max_s = 0
+            elif self.get_current_angle() <= 0.03:
+                min_s = 0
+
+            self.__angle_motor.set(clamp(self.__speed, min_s, max_s))
             yield None
-
-    def set_target_angle(self, angle:float):
-        self.__target_angle = angle
 
     def get_current_angle(self) -> float:
         return self.__angle_encoder.get()
 
-    def hold_angle(self):
-        self.set_target_angle(self.get_current_angle())
+    def set_speed(self, speed: float):
+        self.__speed = speed
 
-    def is_at_angle(self, tolerance: float = 0.01) -> bool:
-        return approximately(self.__target_angle, self.get_current_angle(), tolerance)
+    def get_speed(self):
+        return self.__speed
 
-    def wait_for_angle(self, tolerance: float = 0.01):
+    #def set_up(self):
+    #    self.set_target_angle(0.273)
+
+    #def is_at_angle(self, tolerance: float = 0.02) -> bool:
+    #    return approximately(self.__target_angle, self.get_current_angle(), tolerance)
+
+    def wait_for_angle(self, target, tolerance: float = 0.03):
         yield from ()
-        while not self.is_at_angle(tolerance):
+        while not approximately(target, self.get_current_angle(), tolerance):
+            error_angle = target - self.get_current_angle()
+            self.set_speed(copysign(0.3, error_angle))
             yield None
 
-
-    def set_target_claw_angle(self, claw_angle: float):
-        self.__target_claw_angle = claw_angle
-
-    def get_current_claw_angle(self):
-        return self.__claw_encoder.get()
-
-    def hold_claw_angle(self):
-        self.set_target_claw_angle(self.get_current_claw_angle())
-
-    def is_at_claw_angle(self, tolerance: float = 0.01) -> bool:
-        return approximately(self.__target_claw_angle, self.get_current_claw_angle(), tolerance)
-
-    def wait_for_claw_angle(self, tolerance: float = 0.01):
-        yield from ()
-        while not self.is_at_claw_angle(tolerance):
-            yield None
+        self.set_speed(0)
 
     def initSendable(self, builder: wpiutil.SendableBuilder):
         builder.addDoubleProperty('angle', self.get_current_angle, lambda v: None)
-        builder.addDoubleProperty('target_height', lambda: self.__target_angle, self.set_target_angle)
-        builder.addDoubleProperty('angle', self.get_current_claw_angle, lambda v: None)
-        builder.addDoubleProperty('target_height', lambda: self.__target_claw_angle, self.set_target_angle)
+        builder.addDoubleProperty('speed', self.get_speed, lambda v: None)

@@ -3,7 +3,7 @@ import numpy as np
 import json
 
 
-CALIBRATION_FILE = 'calibration_usb_reef_92.json'
+CALIBRATION_FILE = 'calibration_usb_coral_92_half.json'
 
 RESOLUTION = (1600, 1304)
 FPS = 60
@@ -15,6 +15,8 @@ cap = cv.VideoCapture(0)
 cap.set(cv.CAP_PROP_FRAME_WIDTH, RESOLUTION[0])
 cap.set(cv.CAP_PROP_FRAME_HEIGHT, RESOLUTION[1])
 cap.set(cv.CAP_PROP_FPS, FPS)
+
+RESOLUTION = (int(RESOLUTION[0] / 2), int(RESOLUTION[1] / 2))
 
 # Termination criteria
 criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
@@ -32,7 +34,8 @@ while True:
     ret, img = cap.read()
     if not ret:
         raise Exception('Error with camera')
-    
+
+    img = cv.resize(img, RESOLUTION)
     cv.imshow('preview', img)
 
     pressed_key = cv.waitKey(1) & 0xFF
@@ -91,6 +94,7 @@ while True:
     if not ret:
         raise Exception('Error with camera')
 
+    img = cv.resize(img, RESOLUTION)
     img = cv.remap(img, mapx, mapy, cv.INTER_LINEAR)
 
     cv.imshow('preview', img)

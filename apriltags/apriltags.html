@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+
+<style>
+    body, html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        background-color: rgb(14, 14, 14);
+    }
+
+    .container {
+        display: flex;
+        max-width: 100vw;
+        max-height: 100vh;
+    }
+
+    .stream {
+        width: 50vw;
+        height: auto;
+        object-fit: contain;
+    }
+</style>
+
+<body>
+    <div class="container">
+        <img class="stream" src="http://frc3117-001.local:8081/cam0/detection" alt="Stream 0">
+        <img class="stream" src="http://frc3117-001.local:8081/cam1/detection" alt="Stream 1">
+    </div>
+</body>
+</html>

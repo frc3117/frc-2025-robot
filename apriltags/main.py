@@ -86,7 +86,7 @@ def main():
     nt.startClient4(NT_IDENTITY)
     nt.setServer(NT_SERVER_ADDRESS, ntcore.NetworkTableInstance.kDefaultPort4)
 
-    april_tags_nt = AprilTagsNetworkTable(16, nt)
+    april_tags_nt = AprilTagsNetworkTable(22, nt)
 
     # Initialize the last frame index
     cam0_last_index = -1
