@@ -50,6 +50,7 @@ class AprilTagDetector:
     def __init__(self, raw_stream, detection_stream, resolution, calibration_file: str, tag_size: float = 0.165, tag_family: str = 'tag36h11'):
         self.__raw_stream = raw_stream
         self.__detection_stream = detection_stream
+        self.__resolution = resolution
 
         with open(calibration_file, 'r') as f:
             json_calibration = json.load(f)
@@ -86,10 +87,11 @@ class AprilTagDetector:
         self.__new_camera_matrix, roi = cv.getOptimalNewCameraMatrix(self.__camera_matrix, self.__dist, resolution, 0, resolution)
         self.__mapx, self.__mapy = cv.initUndistortRectifyMap(self.__camera_matrix, self.__dist, None, self.__new_camera_matrix, resolution, 5)
 
-        self.__detector = april_tags.Detector(families=tag_family, nthreads=6)
+        self.__detector = april_tags.Detector(families=tag_family, nthreads=16)
         self.__tag_size = tag_size
 
     def detect(self, frame, undistort=False):
+        frame = cv.resize(frame, self.__resolution)
         if undistort:
             frame = cv.remap(frame, self.__mapx, self.__mapy, cv.INTER_LINEAR)
 

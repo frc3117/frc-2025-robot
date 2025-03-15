@@ -5,6 +5,7 @@ import json
 
 CALIBRATION_FILE = 'calibration_usb_coral_92_half.json'
 
+# Camera Resolution
 RESOLUTION = (1600, 1304)
 FPS = 60
 
@@ -16,6 +17,7 @@ cap.set(cv.CAP_PROP_FRAME_WIDTH, RESOLUTION[0])
 cap.set(cv.CAP_PROP_FRAME_HEIGHT, RESOLUTION[1])
 cap.set(cv.CAP_PROP_FPS, FPS)
 
+# Processing Resolution
 RESOLUTION = (int(RESOLUTION[0] / 2), int(RESOLUTION[1] / 2))
 
 # Termination criteria
@@ -48,7 +50,7 @@ while True:
         gray_img = img[..., 2]
 
         ret, corners = cv.findChessboardCorners(gray_img, CHESSBOARD_SIZE, None)
-        if ret == True:
+        if ret:
             objpoints.append(objp)
 
             corners2 = cv.cornerSubPix(gray_img,corners, (11,11), (-1,-1), criteria)
