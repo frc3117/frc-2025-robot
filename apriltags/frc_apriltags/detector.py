@@ -129,5 +129,5 @@ class AprilTagDetector:
 
         return detection_list
 
-    def __call__(self, frame):
-        self.detect(frame)
+    def __call__(self, frame, undistort: bool = False):
+        self.detect(frame, undistort)

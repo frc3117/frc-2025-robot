@@ -27,7 +27,7 @@ def add_angle_pair(value: float, keys):
     TARGET_ANGLES[keys[0]] = value
     TARGET_ANGLES[keys[1]] = value
 
-# ID 1 and 21
+# ID 10 and 21
 REFERENCE = 0
 
 # Reef
@@ -271,50 +271,65 @@ class RobotController(Component):
             yield None
 
     def __align_logic_loop__(self):
+        selected_tag = None
+        target_pos = None
+        rotation_offset = 0.
+
+        last_seen = 0
+        last_align_target = None
+
         while True:
             if not self.__should_align:
                 yield None
                 continue
 
-            selected_tag = None
-            rotation_offset = 0.
-            target_pos = None
+            # Is the currently selected tag is still valid
+            if selected_tag is not None and (Timer.get_elapsed(last_seen) >= 0.5 or last_align_target != self.__align_target):
+                selected_tag = None
 
-            if self.__align_target == AlignTarget.CORAL_STATION:
-                # Get all the detected coral station tag from the cam with id 1
-                tags = tags_from_cam(AprilTagsReefscapeField.get_coral_station().all, 1)
-                if len(tags) > 0:
-                    selected_tag = tags[0]
-                    target_pos = CORAL_STATION_TARGET
-            elif self.__align_target == AlignTarget.REEF:
-                # Get all the detected reef tag from the cam with id 0
-                tags = tags_from_cam(AprilTagsReefscapeField.get_reef().all, 0)
-                if len(tags) > 0:
-                    # Select the closest tag if multiple tags are detected
-                    #selected_tag = min(tags, key=lambda k: k.relative_position.magnitude)
-                    selected_tag = min(tags, key=lambda k: (k.center / Vector2(800., 652) - Vector2(0.5, 0.5)).magnitude)
-                    rotation_offset = math.pi
+            # If not tag is already selected. try to find a new target
+            if selected_tag is None:
+                if self.__align_target == AlignTarget.CORAL_STATION:
+                    # Get all the detected coral station tag from the cam with id 1
+                    tags = tags_from_cam(AprilTagsReefscapeField.get_coral_station().all, 1)
+                    if len(tags) > 0:
+                        selected_tag = tags[0]
+                        target_pos = CORAL_STATION_TARGET
+                elif self.__align_target == AlignTarget.REEF:
+                    # Get all the detected reef tag from the cam with id 0
+                    tags = tags_from_cam(AprilTagsReefscapeField.get_reef().all, 0)
+                    if len(tags) > 0:
+                        # Select the closest tag if multiple tags are detected
+                        # selected_tag = min(tags, key=lambda k: k.relative_position.magnitude)
+                        selected_tag = min(tags,
+                                           key=lambda k: (k.center / Vector2(800., 652) - Vector2(0.5, 0.5)).magnitude)
+                        rotation_offset = math.pi
 
-                    # Align on the selected side of the reef
-                    if ReefSelector.get_side() == 0:
-                        target_pos = REEF_LEFT_TARGET
-                    else:
-                        target_pos = REEF_RIGHT_TARGET
-            elif self.__align_target == AlignTarget.CUSTOM:
-                # Check if the tag is detected by the correct camera
-                if self.__align_tag.is_detected and self.__align_tag.nt.get_cam_id() == self.__align_cam_id:
-                    selected_tag = self.__align_tag
-                    rotation_offset = math.pi if self.__align_cam_id == 0 else 0
-                    target_pos = self.__align_position
+                        # Align on the selected side of the reef
+                        if ReefSelector.get_side() == 0:
+                            target_pos = REEF_LEFT_TARGET
+                        else:
+                            target_pos = REEF_RIGHT_TARGET
+                elif self.__align_target == AlignTarget.CUSTOM:
+                    # Check if the tag is detected by the correct camera
+                    if self.__align_tag.is_detected and self.__align_tag.nt.get_cam_id() == self.__align_cam_id:
+                        selected_tag = self.__align_tag
+                        rotation_offset = math.pi if self.__align_cam_id == 0 else 0
+                        target_pos = self.__align_position
 
             if selected_tag is not None:
+                last_seen = Timer.get_current_time()
+
                 position = Vector2(selected_tag.relative_position.x, selected_tag.relative_position.z * 0.866)
                 tag_angle = TARGET_ANGLES[selected_tag.id]
 
                 if self.__target_position is None:
                     self.__target_position = position
 
-                self.__target_position = self.__target_position * 0.95 + target_pos * 0.05
+                if selected_tag.is_detected:
+                    self.__target_position = self.__target_position * 0.95 + target_pos * 0.05
+                else:
+                    self.__target_position = self.__target_position * 0.95 + position * 0.05
 
                 error_angle = delta_angle(self.__swerve.get_heading(), tag_angle)
                 error_position = position - self.__target_position
@@ -353,82 +368,6 @@ class RobotController(Component):
             else:
                 self.__target_position = None
                 self.__target_error = None
-
-            yield None
-            continue
-
-            # If a tag got selected align on it
-            if selected_tag is not None:
-                # Apply the rotation of the camera to the calculated position
-                if selected_tag.nt.get_cam_id() == 0:
-                    position = Vector2(selected_tag.relative_position.x, selected_tag.relative_position.z * 0.866)
-                else:
-                    position = Vector2(selected_tag.relative_position.x, selected_tag.relative_position.z * 0.866)
-
-                # If it is the first frame being detected set the moving target position as the current position
-                if self.__target_position is None:
-                    self.__target_position = position
-                    self.__target_angle = self.__swerve.get_heading()
-
-                # Bring the moving target position closer to the real target
-                self.__target_position = self.__target_position * 0 + target_pos * 1
-
-                # Evaluate the error from the current position and the wanted position
-                error_angle = delta_angle(TARGET_ANGLES[selected_tag.id], self.__swerve.get_heading())
-                error = position - self.__target_position.rotate(-error_angle)
-
-                translation = error
-
-                # max(feed_forward, translation)
-                # less feed forward
-
-                if 0.01 <= abs(error.x) <= 0.15:
-                    integral_x = math.copysign(0.1, error.x)
-                else:
-                    integral_x = 0
-
-                if 0.01 <= abs(error.y) <= 0.15:
-                    integral_y = math.copysign(0.1, error.y)
-                else:
-                    integral_y = 0
-                #if approximately(translation.x, 0, 0.09) and not approximately(translation.x, 0.01):
-                #    integral_x += (translation.x / self.__swerve_speed * 0.55) * Timer.get_delta_time() * 5
-                #else:
-                #    integral_x = 0
-
-                #integral_x = 0
-                #integral_y = 0
-                #if approximately(translation.y, 0, 0.09) and not approximately(translation.y, 0.01):
-                #    integral_y += translation.y / self.__swerve_speed * 0.5 * Timer.get_delta_time() * 5
-                #else:
-                #    integral_y = 0
-
-                min_value_x = translation.x / (abs(translation.x) + 0.01) * 0.22 / self.__swerve_speed
-                min_value_y = translation.y / (abs(translation.y) + 0.01) * 0.22 / self.__swerve_speed
-
-                translation = Vector2(translation.x / self.__swerve_speed * 0.55,
-                                      translation.y / self.__swerve_speed * 0.5)
-                #translation /= 1 + abs(error_angle)
-                #translation *= math.cos(error_angle)
-
-                translation = Vector2(max(abs(translation.x), min_value_x) * math.copysign(1, translation.x),
-                                      max(abs(translation.y), min_value_y) * math.copysign(1, translation.y))
-
-                translation += Vector2(integral_x, integral_y)#.rotate(self.__swerve.get_heading())
-
-                #translation = Vector2(integral_x, integral_y)
-
-                # Apply transformation on the swerve translation
-                translation = translation.rotate(self.__swerve.get_heading() + rotation_offset)
-
-                # Override the swerve control to align on the tag
-                self.__vertical_input.override(translation.x)
-                self.__horizontal_input.override(translation.y)
-                self.__rotation_input.override(error_angle / self.__swerve_speed * 0.165)
-            else:
-                self.__target_position = None
-                integral_x = 0
-                integral_y = 0
 
             yield None
 
