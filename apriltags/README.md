@@ -15,6 +15,11 @@ sudo systemctl start frc_apriltags.service
 sudo systemctl stop frc_apriltags.service
 ```
 
+# Reboot Service
+```
+sudo systemctl restart frc_apriltags.service
+```
+
 # Service Status
 ```
 sudo systemctl status frc_apriltags.service

@@ -47,10 +47,11 @@ def __draw_frustum__(img, translation, rotation, camera_params, tag_size, outlin
 
 
 class AprilTagDetector:
-    def __init__(self, raw_stream, detection_stream, resolution, calibration_file: str, tag_size: float = 0.165, tag_family: str = 'tag36h11'):
+    def __init__(self, raw_stream, detection_stream, resolution, stream_resolution, calibration_file: str, tag_size: float = 0.165, tag_family: str = 'tag36h11'):
         self.__raw_stream = raw_stream
         self.__detection_stream = detection_stream
         self.__resolution = resolution
+        self.__stream_resolution = stream_resolution
 
         with open(calibration_file, 'r') as f:
             json_calibration = json.load(f)
@@ -124,8 +125,11 @@ class AprilTagDetector:
                 detection_frame = __draw_frustum__(frame, position, rotation, self.__camera_matrix, self.__tag_size,
                                                  (0, 255, 0))
 
-        self.__raw_stream.set_frame(frame)
+        detection_frame = cv.resize(detection_frame, self.__stream_resolution)
         self.__detection_stream.set_frame(detection_frame)
+
+        frame = cv.resize(frame, self.__stream_resolution)
+        self.__raw_stream.set_frame(frame)
 
         return detection_list
 

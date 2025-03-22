@@ -96,7 +96,7 @@ class Robot(RobotBase):
         coral_outtake = CoralOuttake(WPI_CANSparkMax(10, True, True), DigitalInput(5))
         self.add_component('CoralOuttake', coral_outtake)
 
-        elevator = Elevator(WPI_CANSparkFlex(12, True, True), Encoder(DutyCycleEncoder(6), 0.42, False), PID(9, 0, 0, 0.015, integral_range=(-0.5, 0.5)), DigitalInput(8), DigitalInput(7))
+        elevator = Elevator(WPI_CANSparkFlex(12, True, True), Encoder(DutyCycleEncoder(6), 0.42, False), PID(9, 0, 0, 0.015, integral_range=(-0.5, 0.5)), bottom_limit_switch=DigitalInput(7))
         self.add_component('Elevator', elevator)
 
         controller = RobotController()

@@ -112,7 +112,7 @@ class RobotController(Component):
         self.__coral_in_elevator_event = ConcurrentEvent()
         self.__elevator_at_height_event = ConcurrentEvent()
         self.__coral_shot_event = ConcurrentEvent()
-        self.__robot_aligned = ConcurrentEvent()
+        self.__robot_aligned_event = ConcurrentEvent()
 
     def init(self):
         super().__init__()
@@ -209,6 +209,12 @@ class RobotController(Component):
     def robot_aligned_block(self):
         return self.__robot_aligned_event.create_block()
 
+    def __evaluate_reef_tag_score__(self, tag: AprilTagsFieldPose):
+        distance = tag.relative_position.magnitude
+        angle = abs(delta_angle(self.__swerve.get_heading(), TARGET_ANGLES[tag.id]))
+
+        return (distance * math.sin(angle)) + 0.75 * angle
+
     def __coral_logic_loop__(self):
         while True:
             self.coral_station_align()
@@ -275,11 +281,12 @@ class RobotController(Component):
         target_pos = None
         rotation_offset = 0.
 
-        last_seen = 0
+        last_seen = 0.
         last_align_target = None
 
         while True:
             if not self.__should_align:
+                selected_tag = None
                 yield None
                 continue
 
@@ -289,11 +296,20 @@ class RobotController(Component):
 
             # If not tag is already selected. try to find a new target
             if selected_tag is None:
+                target_pos = None
+                rotation_offset = 0.
+
+                last_seen = 0.
+                last_align_target = None
+                self.__target_position = None
+                self.__target_error = None
+
                 if self.__align_target == AlignTarget.CORAL_STATION:
                     # Get all the detected coral station tag from the cam with id 1
                     tags = tags_from_cam(AprilTagsReefscapeField.get_coral_station().all, 1)
                     if len(tags) > 0:
                         selected_tag = tags[0]
+                        rotation_offset = 0.
                         target_pos = CORAL_STATION_TARGET
                 elif self.__align_target == AlignTarget.REEF:
                     # Get all the detected reef tag from the cam with id 0
@@ -301,8 +317,9 @@ class RobotController(Component):
                     if len(tags) > 0:
                         # Select the closest tag if multiple tags are detected
                         # selected_tag = min(tags, key=lambda k: k.relative_position.magnitude)
-                        selected_tag = min(tags,
-                                           key=lambda k: (k.center / Vector2(800., 652) - Vector2(0.5, 0.5)).magnitude)
+                        # selected_tag = min(tags,
+                        #                   key=lambda k: (k.center / Vector2(800., 652) - Vector2(0.5, 0.5)).magnitude)
+                        selected_tag = min(tags, key=self.__evaluate_reef_tag_score__)
                         rotation_offset = math.pi
 
                         # Align on the selected side of the reef
@@ -319,6 +336,7 @@ class RobotController(Component):
 
             if selected_tag is not None:
                 last_seen = Timer.get_current_time()
+                last_align_target = self.__align_target
 
                 position = Vector2(selected_tag.relative_position.x, selected_tag.relative_position.z * 0.866)
                 tag_angle = TARGET_ANGLES[selected_tag.id]
@@ -326,10 +344,7 @@ class RobotController(Component):
                 if self.__target_position is None:
                     self.__target_position = position
 
-                if selected_tag.is_detected:
-                    self.__target_position = self.__target_position * 0.95 + target_pos * 0.05
-                else:
-                    self.__target_position = self.__target_position * 0.95 + position * 0.05
+                self.__target_position = self.__target_position * 0.95 + target_pos * 0.05
 
                 error_angle = delta_angle(self.__swerve.get_heading(), tag_angle)
                 error_position = position - self.__target_position
@@ -348,9 +363,9 @@ class RobotController(Component):
                 rotation = error_angle * -0.10
 
                 # Apply Feed Forward
-                if error_position.magnitude <= 0.30:
-                    min_x = abs(error_position.x) / (abs(error_position.x) + 0.05) * 0.26
-                    min_y = abs(error_position.y) / (abs(error_position.y) + 0.05) * 0.26
+                if real_error_position.magnitude <= 0.30:
+                    min_x = abs(real_error_position.x) / (abs(real_error_position.x) + 0.05) * 0.26
+                    min_y = abs(real_error_position.y) / (abs(real_error_position.y) + 0.05) * 0.26
                 else:
                     min_x = 0
                     min_y = 0

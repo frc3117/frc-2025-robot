@@ -38,7 +38,9 @@ UNDISTORT_IMAGE = environment_or_default('FRC_UNDISTORT_IMAGE', True, parse_bool
 CAM0_ID = environment_or_default('FRC_CAM0_ID', 0, parse_int)
 CAM0_RESOLUTION = environment_or_default('FRC_CAM0_RESOLUTION', (1600, 1304), parse_tuple)
 CAM0_PROCESSING_RESOLUTION = environment_or_default('FRC_CAM0_PROCESSING_RESOLUTION', CAM0_RESOLUTION, parse_tuple)
+CAM0_STREAM_RESOLUTION = environment_or_default('FRC_CAM0_STREAM_RESOLUTION', CAM0_PROCESSING_RESOLUTION, parse_tuple)
 CAM0_FPS = environment_or_default('FRC_CAM0_FPS', 60, parse_int)
+CAM0_FLIP = environment_or_default('FRC_CAM0_FLIP', None, parse_int)
 CAM0_CALIBRATION_FILE = environment_or_default('FRC_CAM0_CALIBRATION_FILE', 'calibration_0.json', parse_str)
 CAM0_NAME = environment_or_default('FRC_CAM0_NAME', 'cam0', parse_str)
 
@@ -46,7 +48,9 @@ CAM0_NAME = environment_or_default('FRC_CAM0_NAME', 'cam0', parse_str)
 CAM1_ID = environment_or_default('FRC_CAM1_ID', 2, parse_int)
 CAM1_RESOLUTION = environment_or_default('FRC_CAM1_RESOLUTION', (1600, 1304), parse_tuple)
 CAM1_PROCESSING_RESOLUTION = environment_or_default('FRC_CAM1_PROCESSING_RESOLUTION', CAM1_RESOLUTION, parse_tuple)
+CAM1_STREAM_RESOLUTION = environment_or_default('FRC_CAM1_STREAM_RESOLUTION', CAM1_PROCESSING_RESOLUTION, parse_tuple)
 CAM1_FPS = environment_or_default('FRC_CAM1_FPS', 60, parse_int)
+CAM1_FLIP = environment_or_default('FRC_CAM1_FLIP', None, parse_int)
 CAM1_CALIBRATION_FILE = environment_or_default('FRC_CAM1_CALIBRATION_FILE', 'calibration_1.json', parse_str)
 CAM1_NAME = environment_or_default('FRC_CAM1_NAME', 'cam1', parse_str)
 
@@ -57,8 +61,8 @@ NT_SERVER_ADDRESS = environment_or_default('FRC_NT_SERVER_ADDRESS', '10.31.17.2'
 
 def main():
     # Create the camera
-    cam0 = USBCamera(CAM0_ID, CAM0_RESOLUTION, CAM0_FPS)
-    cam1 = USBCamera(CAM1_ID, CAM1_RESOLUTION, CAM1_FPS)
+    cam0 = USBCamera(CAM0_ID, CAM0_RESOLUTION, CAM0_FPS, CAM0_FLIP)
+    cam1 = USBCamera(CAM1_ID, CAM1_RESOLUTION, CAM1_FPS, CAM1_FLIP)
 
     # Start the camera thread
     cam0.start()
@@ -69,19 +73,19 @@ def main():
     cam1.wait_for_init()
 
     # Create the mjpeg streamer
-    streamer = MjpegStreamer()
+    streamer = MjpegStreamer(port=5800)
 
-    stream0_raw = streamer.create_stream(f'{CAM0_NAME}/raw', CAM0_FPS, CAM0_PROCESSING_RESOLUTION)
-    stream0_detection = streamer.create_stream(f'{CAM0_NAME}/detection', CAM0_FPS, CAM0_PROCESSING_RESOLUTION)
+    stream0_raw = streamer.create_stream(f'{CAM0_NAME}/raw', CAM0_FPS, CAM0_STREAM_RESOLUTION)
+    stream0_detection = streamer.create_stream(f'{CAM0_NAME}/detection', CAM0_FPS, CAM0_STREAM_RESOLUTION)
 
-    stream1_raw = streamer.create_stream(f'{CAM1_NAME}/raw', CAM1_FPS, CAM1_PROCESSING_RESOLUTION)
-    stream1_detection = streamer.create_stream(f'{CAM1_NAME}/detection', CAM1_PROCESSING_RESOLUTION)
+    stream1_raw = streamer.create_stream(f'{CAM1_NAME}/raw', CAM1_FPS, CAM1_STREAM_RESOLUTION)
+    stream1_detection = streamer.create_stream(f'{CAM1_NAME}/detection', CAM1_FPS, CAM1_STREAM_RESOLUTION)
 
     streamer.start()
 
     # Create the April Tag Detector
-    detector0 = AprilTagDetector(stream0_raw, stream0_detection, CAM0_PROCESSING_RESOLUTION, CAM0_CALIBRATION_FILE)
-    detector1 = AprilTagDetector(stream1_raw, stream1_detection, CAM1_PROCESSING_RESOLUTION, CAM1_CALIBRATION_FILE)
+    detector0 = AprilTagDetector(stream0_raw, stream0_detection, CAM0_PROCESSING_RESOLUTION, CAM0_STREAM_RESOLUTION, CAM0_CALIBRATION_FILE)
+    detector1 = AprilTagDetector(stream1_raw, stream1_detection, CAM1_PROCESSING_RESOLUTION, CAM1_STREAM_RESOLUTION, CAM1_CALIBRATION_FILE)
 
     # Create the network table client
     nt = ntcore.NetworkTableInstance.getDefault()

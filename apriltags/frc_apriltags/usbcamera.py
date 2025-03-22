@@ -6,10 +6,11 @@ import cv2 as cv
 
 
 class USBCamera:
-    def __init__(self, id: int = 0, resolution: Tuple[int, int] = (1600, 1304), fps: int = 60):
+    def __init__(self, id: int = 0, resolution: Tuple[int, int] = (1600, 1304), fps: int = 60, flip: int = None):
         self.__id = id
         self.__resolution = resolution
         self.__fps = fps
+        self.__flip = flip
 
         self.__current_frame = None
         self.__current_frame_index = -1
@@ -50,6 +51,9 @@ class USBCamera:
                 ret, frame = cap.read()
                 if not ret:
                     break
+
+                if self.__flip is not None:
+                    frame = cv.flip(frame, self.__flip)
 
                 self.__current_frame = frame
                 self.__current_frame_index += 1

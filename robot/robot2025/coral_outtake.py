@@ -16,7 +16,7 @@ class CoralOuttake(Component):
         self.__prox = prox
 
     def has_coral(self):
-        return not self.__prox.get()
+        return self.__prox.get()
 
     def feed_coral(self):
         yield from ()
