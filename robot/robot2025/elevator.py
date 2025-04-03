@@ -9,12 +9,12 @@ from wpilib import DigitalInput, SmartDashboard
 
 import wpiutil
 
-FEEDING_HEIGHT = 0.0514
+FEEDING_HEIGHT = 0.042
 STAGES_HEIGHT = [
-    0.23,
-    0.23,
-    0.518,
-    0.958,
+    0.221,
+    0.221,
+    0.493,
+    0.95,
 ]
 
 
@@ -33,6 +33,8 @@ class Elevator(Component):
 
     __control_coroutine = None
 
+    __first_run = False
+
     def __init__(self,
                  elevator_motor,
                  elevator_encoder: Encoder,
@@ -47,9 +49,6 @@ class Elevator(Component):
         self.__top_limit_switch = top_limit_switch
         self.__bottom_limit_switch = bottom_limit_switch
 
-        self.__target_height = self.get_current_height()
-        self.__target_leaky.current = self.__target_height
-
         self.__control_coroutine = None
 
         SmartDashboard.putData('Elevator/pid', self.__controller)
@@ -58,7 +57,12 @@ class Elevator(Component):
         self.__error_lambda = 0.85
 
     def init(self):
-        self.__error_leaky.current = self.error()
+        if not self.__first_run:
+            self.__target_height = self.get_current_height()
+            self.__target_leaky.current = self.__target_height
+            self.__first_run = True
+
+        self.__error_leaky.current = abs(self.true_error())
 
     def update(self):
         self.__target_leaky.evaluate(self.__target_height, self.__target_lambda)

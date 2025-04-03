@@ -6,8 +6,8 @@ from frctools.frcmath import Vector2, SlewRateLimiter
 from frctools.input import Input, XboxControllerInput, PowerTransform
 from frctools.vision.apriltags import AprilTagsReefscapeField
 
-from robot2025 import Climber, Conveyor, CoralOuttake, Elevator, RobotController
-from robot2025.autonomous import SimpleForward, SingleCoral
+from robot2025 import Climber, Conveyor, CoralOuttake, Elevator, Yeeter, RobotController
+from robot2025.autonomous import SimpleForward, SingleCoral, MultiCoral
 
 from wpilib import DutyCycleEncoder, ADIS16448_IMU, SPI, DigitalInput
 
@@ -20,33 +20,35 @@ class Robot(RobotBase):
                        0,
                        XboxControllerInput.LEFT_JOYSTICK_Y,
                        deadzone=0.02,
-                       axis_filter=SlewRateLimiter(6),
-                       axis_transform=PowerTransform(1.5))
+                       #axis_filter=SlewRateLimiter(600),
+                       axis_transform=PowerTransform(1))
         Input.add_axis('vertical',
                        0,
                        XboxControllerInput.LEFT_JOYSTICK_X,
                        inverted=True,
                        deadzone=0.02,
-                       axis_filter=SlewRateLimiter(6),
-                       axis_transform=PowerTransform(1.5))
+                       #axis_filter=SlewRateLimiter(600),
+                       axis_transform=PowerTransform(1))
 
         Input.create_composite_axis('rotation',
                        positive=Input.add_axis('rotation_pos',
                                                0,
                                                XboxControllerInput.RIGHT_TRIGGER,
                                                deadzone=0.02,
-                                               axis_transform=PowerTransform(1.5)),
+                                               axis_transform=PowerTransform(1)),
                        negative=Input.add_axis('rotation_neg',
                                                0,
                                                XboxControllerInput.LEFT_TRIGGER,
                                                deadzone=0.02,
-                                               axis_transform=PowerTransform(1.5)),
-                       axis_filter=SlewRateLimiter(6))
+                                               axis_transform=PowerTransform(1)),
+                                    )
+                       #axis_filter=SlewRateLimiter(6))
 
         Input.add_button('align', 0, XboxControllerInput.X)
         Input.add_button('intake', 0, XboxControllerInput.A)
         Input.add_button('outtake', 0, XboxControllerInput.B)
         Input.add_button('climb', 0, XboxControllerInput.Y)
+        Input.add_button('yeet', 0, XboxControllerInput.START)
         Input.add_button('recalibrate', 0, XboxControllerInput.BACK)
 
         Input.add_button('manual_climber_up', 0, XboxControllerInput.RB)
@@ -87,7 +89,7 @@ class Robot(RobotBase):
         swerve.set_cosine_compensation(True)
         self.add_component('Swerve', swerve)
 
-        climber = Climber(WPI_CANSparkMax(14, True, False, True), Encoder(DutyCycleEncoder(9), 0.64, False))
+        climber = Climber(WPI_CANSparkMax(14, True, False, True), Encoder(DutyCycleEncoder(9), 0.64, False), DigitalInput(7))
         self.add_component('Climber', climber)
 
         conveyor = Conveyor(WPI_CANSparkMax(11, True, True), DigitalInput(4))
@@ -96,8 +98,11 @@ class Robot(RobotBase):
         coral_outtake = CoralOuttake(WPI_CANSparkMax(10, True, True), DigitalInput(5))
         self.add_component('CoralOuttake', coral_outtake)
 
-        elevator = Elevator(WPI_CANSparkFlex(12, True, True), Encoder(DutyCycleEncoder(6), 0.42, False), PID(9, 0, 0, 0.015, integral_range=(-0.5, 0.5)), bottom_limit_switch=DigitalInput(7))
+        elevator = Elevator(WPI_CANSparkFlex(12, True, True), Encoder(DutyCycleEncoder(6), 0.6, False), PID(9, 0, 0, 0.015, integral_range=(-0.5, 0.5)), top_limit_switch=DigitalInput(8))
         self.add_component('Elevator', elevator)
+
+        #yeeter = Yeeter(WPI_CANSparkMax(15, True, True), Encoder(DutyCycleEncoder(8), 0.75, False))
+        #self.add_component('Yeeter', yeeter)
 
         controller = RobotController()
         self.add_component('RobotController', controller)
@@ -113,6 +118,12 @@ class Robot(RobotBase):
 
         single_coral = SingleCoral()
         self.add_auto('Single Coral', single_coral)
+
+        multi_coral = MultiCoral(True)
+        self.add_auto('Multi_Coral_Left', multi_coral)
+
+        multi_coral = MultiCoral(False)
+        self.add_auto('Multi_Coral_Right', multi_coral)
 
     def disabledExit(self):
         super().disabledExit()

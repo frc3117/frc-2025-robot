@@ -4,22 +4,26 @@ from frctools.sensor import Encoder
 from frctools.frcmath import approximately, clamp
 from math import copysign
 
+from wpilib import DigitalInput
+
 import wpiutil
 
 
 class Climber(Component):
     __angle_motor = None
     __angle_encoder: Encoder
+    __prox: DigitalInput
 
     __speed: float = 0.
 
     __control_coroutine = None
 
-    def __init__(self, angle_motor: WPI_CANSparkMax, angle_encoder: Encoder):
+    def __init__(self, angle_motor: WPI_CANSparkMax, angle_encoder: Encoder, prox: DigitalInput):
         super().__init__()
 
         self.__angle_motor = angle_motor
         self.__angle_encoder = angle_encoder
+        self.__prox = prox
 
     def init(self):
         super().init()
@@ -51,17 +55,20 @@ class Climber(Component):
     def get_speed(self):
         return self.__speed
 
+    def has_cage(self):
+        return not self.__prox.get()
+
     #def set_up(self):
     #    self.set_target_angle(0.273)
 
     #def is_at_angle(self, tolerance: float = 0.02) -> bool:
     #    return approximately(self.__target_angle, self.get_current_angle(), tolerance)
 
-    def wait_for_angle(self, target, tolerance: float = 0.03):
+    def wait_for_angle(self, target, tolerance: float = 0.03, speed: float = 0.4):
         yield from ()
         while not approximately(target, self.get_current_angle(), tolerance):
             error_angle = target - self.get_current_angle()
-            self.set_speed(copysign(0.3, error_angle))
+            self.set_speed(copysign(speed, error_angle))
             yield None
 
         self.set_speed(0)
@@ -69,3 +76,4 @@ class Climber(Component):
     def initSendable(self, builder: wpiutil.SendableBuilder):
         builder.addDoubleProperty('angle', self.get_current_angle, lambda v: None)
         builder.addDoubleProperty('speed', self.get_speed, lambda v: None)
+        builder.addBooleanProperty('has_cage', self.has_cage, lambda v: None)
